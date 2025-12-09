@@ -4,38 +4,39 @@ import "@/lib/portal-patch";
 import { clientComponents, serverComponents } from "@config/components.registry";
 import "./styles/theme.css";
 
-declare global {
-	interface Window {
-		twActiveComponents?: { serverSide?: string[] };
-	}
-}
+const getReactRoot = (element: Element) => (element as any).__reactRoot;
 
-const mountIsland = (el: Element, Component: React.ComponentType) => {
-	if ((el as any).__reactRoot) return;
-	(el as any).__reactRoot = createRoot(el);
-	(el as any).__reactRoot.render(<Component />);
+const mountReactIsland = (element: Element, Component: React.ComponentType) => {
+	if (getReactRoot(element)) return;
+	const root = createRoot(element);
+	(element as any).__reactRoot = root;
+	root.render(<Component />);
 };
 
-const init = () => {
-	requestAnimationFrame(() => {
-		// Mount client-side React islands
-		const islandElements = Object.entries(clientComponents).flatMap(([key, Component]) =>
-			Array.from(document.querySelectorAll(`[data-island="${key}"]`), el => ({ el, Component }))
-		);
-		
-		islandElements.forEach(({ el, Component }) => mountIsland(el, Component));
+const mountClientIslands = () => {
+	const clientIslandElements = Object.entries(clientComponents).flatMap(([islandSlug, Component]) =>
+		Array.from(document.querySelectorAll(`[data-island="${islandSlug}"]`), element => ({ element, Component }))
+	);
+	clientIslandElements.forEach(({ element, Component }) => mountReactIsland(element, Component));
+};
 
-		// Execute server-side enhancements for active components
-		const activeSlugs = window.twActiveComponents?.serverSide || [];
-		activeSlugs.forEach(slug => {
-			const enhance = serverComponents[slug as keyof typeof serverComponents];
-			if (enhance) enhance();
-		});
+const enhanceServerComponents = () => {
+	Object.values(serverComponents).forEach(enhanceServerComponent => enhanceServerComponent());
+};
+
+const initializeComponents = () => {
+	requestAnimationFrame(() => {
+		mountClientIslands();
+		enhanceServerComponents();
 	});
 };
 
-if (document.readyState === "loading") {
-	document.addEventListener("DOMContentLoaded", init, { once: true });
-} else {
-	init();
-}
+const ready = (fn: () => void) => {
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", fn, { once: true });
+	} else {
+		fn();
+	}
+};
+
+ready(initializeComponents);
