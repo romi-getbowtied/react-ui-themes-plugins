@@ -59,8 +59,8 @@ if (!class_exists('TW_Theme_Setup')) {
             }
             
             $this->components_paths = [
-                'path' => $this->base_paths['path'] . '/components',
-                'url'  => $this->base_paths['url'] . '/components'
+                'path' => $this->base_paths['path'] . '/ui',
+                'url'  => $this->base_paths['url'] . '/ui'
             ];
         }
 

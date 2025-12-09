@@ -24,7 +24,7 @@ if (!class_exists('TW_Component_Loader')) {
 
         public function load_components() {
             foreach ($this->active_components['server-side'] ?? [] as $slug) {
-                $path = $this->components_paths['path'] . "/src/components/app/server-side/{$slug}/index.php";
+                $path = $this->components_paths['path'] . "/src/ui/app/server-side/{$slug}/index.php";
                 if (file_exists($path)) include_once $path;
             }
         }
