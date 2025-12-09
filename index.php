@@ -54,8 +54,8 @@ if (!class_exists('TW_Components')) {
 
         private function get_active_components() {
             if (empty($this->active_components)) {
+                [$type] = explode(':', $this->context_id, 2);
                 $filter_id = str_replace(':', '_', $this->context_id);
-                $type = explode(':', $this->context_id)[0];
                 $filtered = apply_filters("tw_component_loader_active_components_$filter_id", 
                     apply_filters("tw_component_loader_active_components_$type", []));
                 $this->active_components = ['server-side' => $filtered['server-side'] ?? (is_array($filtered) && !isset($filtered['server-side']) ? $filtered : [])];
@@ -65,30 +65,24 @@ if (!class_exists('TW_Components')) {
 
         private function initialize() {
             $global_key = 'tw_' . str_replace(':', '_', $this->context_id);
-            $GLOBALS["{$global_key}_setup"] = $this;
-            $GLOBALS["{$global_key}_component_loader"] = $this;
+            $GLOBALS["{$global_key}_setup"] = $GLOBALS["{$global_key}_component_loader"] = $this;
             
             add_action('init', fn() => $this->load_components(), 1);
-            
-            if (strpos($this->context_id, 'theme:') === 0) {
-                add_action('wp_enqueue_scripts', fn() => $this->enqueue_assets());
-            } else {
-                add_action('admin_enqueue_scripts', fn() => $this->enqueue_assets());
-            }
+            add_action(strpos($this->context_id, 'theme:') === 0 ? 'wp_enqueue_scripts' : 'admin_enqueue_scripts', fn() => $this->enqueue_assets());
         }
 
         public function load_components() {
-            $components = $this->get_active_components();
             $base = "{$this->components_paths['path']}/src/components/app/server-side";
-            foreach ($components['server-side'] ?? [] as $slug) {
+            foreach ($this->get_active_components()['server-side'] ?? [] as $slug) {
                 $file = "$base/$slug/index.php";
                 if (file_exists($file)) include_once $file;
             }
         }
 
         public function enqueue_assets() {
-            $assets_path = "{$this->components_paths['path']}/assets";
-            $assets_url = "{$this->components_paths['url']}/assets";
+            $paths = $this->components_paths;
+            $assets_path = "{$paths['path']}/assets";
+            $assets_url = "{$paths['url']}/assets";
             $version = file_exists("$assets_path/styles.css") ? filemtime("$assets_path/styles.css") : '1.0.0';
             $handle = 'tw-' . str_replace(':', '-', $this->context_id);
 
@@ -108,8 +102,7 @@ if (!class_exists('TW_Components')) {
         }
 
         public function get_active_server_side_components() {
-            $components = $this->get_active_components();
-            return $components['server-side'] ?? [];
+            return $this->get_active_components()['server-side'] ?? [];
         }
 
         public static function init() {
@@ -118,22 +111,21 @@ if (!class_exists('TW_Components')) {
         }
 
         private static function detect_context() {
-            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10);
             $components_dir = dirname(__FILE__);
             $folder_name = basename($components_dir);
             $sep = DIRECTORY_SEPARATOR;
+            $plugins_sep = $sep . 'plugins' . $sep;
+            $themes_sep = $sep . 'themes' . $sep;
             
-            foreach ($backtrace as $frame) {
+            foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10) as $frame) {
                 if (!isset($frame['file'])) continue;
                 $file = $frame['file'];
                 if (strpos($file, "/$folder_name/") !== false || strpos($file, "$sep$folder_name$sep") !== false) continue;
-                if (strpos($file, $sep . 'plugins' . $sep) !== false || strpos($file, '/plugins/') !== false) {
-                    $id = preg_replace('/[^a-z0-9_-]/i', '_', basename(dirname($components_dir)));
-                    return 'plugin:' . $id;
+                if (strpos($file, $plugins_sep) !== false || strpos($file, '/plugins/') !== false) {
+                    return 'plugin:' . preg_replace('/[^a-z0-9_-]/i', '_', basename(dirname($components_dir)));
                 }
-                if (strpos($file, $sep . 'themes' . $sep) !== false || strpos($file, '/themes/') !== false) {
-                    $id = preg_replace('/[^a-z0-9_-]/i', '_', basename(get_template_directory()));
-                    return 'theme:' . $id;
+                if (strpos($file, $themes_sep) !== false || strpos($file, '/themes/') !== false) {
+                    return 'theme:' . preg_replace('/[^a-z0-9_-]/i', '_', basename(get_template_directory()));
                 }
             }
             $id = preg_replace('/[^a-z0-9_-]/i', '_', basename(dirname($components_dir)));
