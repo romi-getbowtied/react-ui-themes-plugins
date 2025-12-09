@@ -1,11 +1,7 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import "@/lib/portal-patch";
-import { clientComponents } from "@config/islands.config";
-import { enhanceNavigationMenu } from "@/components/app/server-side/navigation-menu-enhanced/scripts";
-import { enhanceHeroParallax } from "@/components/app/server-side/hero-parallax-enhanced/scripts";
-import { enhanceBentoGrid } from "@/components/app/server-side/bento-grid-enhanced/scripts";
-import { enhanceAppleCardsCarousel } from "@/components/app/server-side/apple-cards-carousel-enhanced/scripts";
+import { clientComponents, serverComponents } from "@config/islands.config";
 import "./styles/theme.css";
 
 declare global {
@@ -13,13 +9,6 @@ declare global {
 		twActiveComponents?: { serverSide?: string[] };
 	}
 }
-
-const enhancements: Record<string, () => void> = {
-	"navigation-menu-enhanced": enhanceNavigationMenu,
-	"hero-parallax-enhanced": enhanceHeroParallax,
-	"bento-grid-enhanced": enhanceBentoGrid,
-	"apple-cards-carousel-enhanced": enhanceAppleCardsCarousel,
-};
 
 const islands = clientComponents as Record<string, React.ComponentType>;
 
@@ -34,8 +23,17 @@ const init = () => {
 			Array.from(document.querySelectorAll(`[data-island="${key}"]`), el => ({ el, Component }))
 		);
 
-	requestAnimationFrame(() => {
-		(window.twActiveComponents?.serverSide || []).forEach(slug => enhancements[slug]?.());
+	requestAnimationFrame(async () => {
+		// Load and execute server-side enhancements for active components
+		const activeServerComponents = window.twActiveComponents?.serverSide || [];
+		for (const slug of activeServerComponents) {
+			const loader = serverComponents[slug as keyof typeof serverComponents];
+			if (loader) {
+				const enhance = await loader();
+				enhance();
+			}
+		}
+		
 		islandElements.forEach(({ el, Component }) => mountIsland(el, Component));
 	});
 };
