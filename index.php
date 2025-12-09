@@ -10,11 +10,25 @@ if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/inc/class-setup.php';
 require_once __DIR__ . '/inc/class-component-loader.php';
 
-// Initialize and load components
+// Helper function to register components (must be defined before initialization)
+function tw_register_components($components) {
+	$setup = TW_Setup::init();
+	$context_id = $setup->get_context_id();
+	$type = explode(':', $context_id)[0];
+	add_filter("tw_component_loader_active_components_$type", function() use ($components) {
+		return $components;
+	}, 10, 1);
+}
+
+// Initialize (components will be loaded after filters are registered)
 $tw_setup = TW_Setup::init();
 $context_id = $tw_setup->get_context_id();
 $tw_component_loader = TW_Component_Loader::init($tw_setup->get_components_paths(), $context_id);
-$tw_component_loader->load_components();
+
+// Load components after filters can be registered (on init hook)
+add_action('init', function() use ($tw_component_loader) {
+	$tw_component_loader->load_components();
+}, 1);
 
 // Store in context-specific globals (sanitize context ID)
 $global_key = 'tw_' . str_replace(':', '_', $context_id);
