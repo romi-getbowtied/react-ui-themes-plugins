@@ -17,21 +17,17 @@ if (!class_exists('TW_Component_Loader')) {
         private function __construct($components_paths, $context_id) {
             $this->components_paths = $components_paths;
             $this->context_id = $context_id;
-            $filter_name = 'tw_component_loader_active_components_' . $context_id;
-            $this->active_components = apply_filters($filter_name, ['server-side' => []]);
+            $this->active_components = apply_filters("tw_component_loader_active_components_$context_id", ['server-side' => []]);
         }
 
         public static function init($components_paths, $context_id) {
-            if (!isset(self::$instances[$context_id])) {
-                self::$instances[$context_id] = new self($components_paths, $context_id);
-            }
-            return self::$instances[$context_id];
+            return self::$instances[$context_id] ??= new self($components_paths, $context_id);
         }
 
         public function load_components() {
-            $base = $this->components_paths['path'] . '/src/components/app/server-side/';
+            $base = "{$this->components_paths['path']}/src/components/app/server-side";
             foreach ($this->active_components['server-side'] ?? [] as $slug) {
-                $file = $base . $slug . '/index.php';
+                $file = "$base/$slug/index.php";
                 if (file_exists($file)) include_once $file;
             }
         }
