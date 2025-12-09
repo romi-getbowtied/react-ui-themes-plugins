@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import "@/lib/portal-patch";
-import { clientComponents } from "@config/client-components.config";
+import { clientComponents } from "@config/islands.config";
 import { enhanceNavigationMenu } from "@/components/app/server-side/navigation-menu-enhanced/scripts";
 import { enhanceHeroParallax } from "@/components/app/server-side/hero-parallax-enhanced/scripts";
 import { enhanceBentoGrid } from "@/components/app/server-side/bento-grid-enhanced/scripts";
