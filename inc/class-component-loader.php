@@ -9,17 +9,23 @@ if (!defined('ABSPATH')) exit;
 
 if (!class_exists('TW_Component_Loader')) {
     class TW_Component_Loader {
-        private static $instance = null;
+        private static $instances = [];
+        private $context_id;
         private $components_paths;
         private $active_components = [];
 
-        private function __construct($components_paths) {
+        private function __construct($components_paths, $context_id) {
             $this->components_paths = $components_paths;
-            $this->active_components = apply_filters('tw_component_loader_active_components', ['server-side' => []]);
+            $this->context_id = $context_id;
+            $filter_name = 'tw_component_loader_active_components_' . $context_id;
+            $this->active_components = apply_filters($filter_name, ['server-side' => []]);
         }
 
-        public static function init($components_paths) {
-            return self::$instance ??= new self($components_paths);
+        public static function init($components_paths, $context_id) {
+            if (!isset(self::$instances[$context_id])) {
+                self::$instances[$context_id] = new self($components_paths, $context_id);
+            }
+            return self::$instances[$context_id];
         }
 
         public function load_components() {
@@ -32,6 +38,10 @@ if (!class_exists('TW_Component_Loader')) {
 
         public function get_active_server_side_components() {
             return $this->active_components['server-side'] ?? [];
+        }
+
+        public function get_context_id() {
+            return $this->context_id;
         }
     }
 }

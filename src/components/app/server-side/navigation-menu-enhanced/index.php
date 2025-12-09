@@ -15,6 +15,7 @@ if (!defined('ABSPATH')) exit;
  * @param array $args Additional arguments for wp_nav_menu
  * @return void
  */
+if (!function_exists('tw_render_nav_menu')) {
 function tw_render_nav_menu($location = 'primary', $args = []) {
 	$defaults = [
 		'theme_location' => $location,
@@ -38,6 +39,7 @@ function tw_render_nav_menu($location = 'primary', $args = []) {
 		echo '<li><a href="' . esc_url(home_url('/contact')) . '" itemprop="url"><span itemprop="name">Contact</span></a></li>';
 		echo '</ul>';
 	}
+}
 }
 
 /**

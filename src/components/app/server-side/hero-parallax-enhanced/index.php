@@ -14,6 +14,7 @@ if (!defined('ABSPATH')) exit;
  * 
  * @return array Products array
  */
+if (!function_exists('tw_get_hero_products')) {
 function tw_get_hero_products() {
 	$default_products = [
 		[
@@ -96,6 +97,7 @@ function tw_get_hero_products() {
 	// Allow filtering of products
 	return apply_filters('tw_hero_products', $default_products);
 }
+}
 
 /**
  * Render SEO-friendly hero parallax section
@@ -103,6 +105,7 @@ function tw_get_hero_products() {
  * @param int $items_per_row Number of items per row (default: 5, can be filtered with 'tw_hero_items_per_row')
  * @return void
  */
+if (!function_exists('tw_render_hero_parallax')) {
 function tw_render_hero_parallax($items_per_row = null) {
 	// Allow filtering of items per row
 	if ($items_per_row === null) {
@@ -190,5 +193,6 @@ function tw_render_hero_parallax($items_per_row = null) {
 		</div>
 	</section>
 	<?php
+}
 }
 

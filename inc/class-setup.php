@@ -9,15 +9,17 @@ if (!defined('ABSPATH')) exit;
 
 if (!class_exists('TW_Setup')) {
     class TW_Setup {
-        private static $instance = null;
+        private static $instances = [];
+        private $context_id;
         private $base_paths;
         private $components_paths;
 
-        private function __construct() {
-            $plugin_root = dirname(dirname(dirname(__FILE__)));
-            $is_plugin = strpos($plugin_root, 'plugins') !== false;
+        private function __construct($context_id) {
+            $this->context_id = $context_id;
+            $ui_dir = dirname(dirname(__FILE__));
             
-            if ($is_plugin) {
+            if ($context_id === 'plugin') {
+                $plugin_root = dirname($ui_dir);
                 $plugin_file = $this->find_plugin_file($plugin_root);
                 $this->base_paths = $plugin_file ? [
                     'path' => plugin_dir_path($plugin_file),
@@ -54,7 +56,32 @@ if (!class_exists('TW_Setup')) {
         }
 
         public static function init() {
-            return self::$instance ??= new self();
+            $context_id = self::detect_context();
+            if (!isset(self::$instances[$context_id])) {
+                self::$instances[$context_id] = new self($context_id);
+            }
+            return self::$instances[$context_id];
+        }
+
+        private static function detect_context() {
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10);
+            foreach ($backtrace as $frame) {
+                if (isset($frame['file'])) {
+                    if (strpos($frame['file'], DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR) !== false ||
+                        strpos($frame['file'], '/plugins/') !== false) {
+                        return 'plugin';
+                    }
+                    if (strpos($frame['file'], DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR) !== false ||
+                        strpos($frame['file'], '/themes/') !== false) {
+                        return 'theme';
+                    }
+                }
+            }
+            return 'theme'; // Default to theme
+        }
+
+        public function get_context_id() {
+            return $this->context_id;
         }
 
         public function get_components_paths() {
