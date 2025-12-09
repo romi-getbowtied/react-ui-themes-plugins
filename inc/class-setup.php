@@ -1,14 +1,14 @@
 <?php
 /**
- * Theme Setup
+ * Setup
  * 
  * @package Tailwind_Scoped_Theme
  */
 
 if (!defined('ABSPATH')) exit;
 
-if (!class_exists('TW_Theme_Setup')) {
-    class TW_Theme_Setup {
+if (!class_exists('TW_Setup')) {
+    class TW_Setup {
         private static $instance = null;
         private $base_paths;
         private $components_paths;
@@ -77,6 +77,6 @@ if (!class_exists('TW_Theme_Setup')) {
         }
     }
 
-    TW_Theme_Setup::init();
+    TW_Setup::init();
 }
 
