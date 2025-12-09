@@ -10,8 +10,6 @@ declare global {
 	}
 }
 
-const islands = clientComponents as Record<string, React.ComponentType>;
-
 const mountIsland = (el: Element, Component: React.ComponentType) => {
 	if ((el as any).__reactRoot) return;
 	(el as any).__reactRoot = createRoot(el);
@@ -19,21 +17,22 @@ const mountIsland = (el: Element, Component: React.ComponentType) => {
 };
 
 const init = () => {
-	const islandElements = Object.entries(islands).flatMap(([key, Component]) =>
-			Array.from(document.querySelectorAll(`[data-island="${key}"]`), el => ({ el, Component }))
-		);
-
 	requestAnimationFrame(async () => {
-		// Load and execute server-side enhancements for active components
-		const activeServerComponents = window.twActiveComponents?.serverSide || [];
-		for (const slug of activeServerComponents) {
-			const loader = serverComponents[slug as keyof typeof serverComponents];
-			if (loader) {
-				const enhance = await loader();
-				enhance();
-			}
-		}
+		// Load client components in parallel
+		const islandElements = await Promise.all(
+			Object.entries(clientComponents).flatMap(async ([key, loader]) => {
+				const Component = (await loader()).default;
+				return Array.from(document.querySelectorAll(`[data-island="${key}"]`), el => ({ el, Component }));
+			})
+		).then(results => results.flat());
+
+		// Load and execute server-side enhancements in parallel
+		const activeSlugs = window.twActiveComponents?.serverSide || [];
+		const serverLoaders = activeSlugs
+			.map(slug => serverComponents[slug as keyof typeof serverComponents])
+			.filter(Boolean);
 		
+		await Promise.all(serverLoaders.map(loader => loader().then(enhance => enhance())));
 		islandElements.forEach(({ el, Component }) => mountIsland(el, Component));
 	});
 };
