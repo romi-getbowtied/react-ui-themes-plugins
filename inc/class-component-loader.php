@@ -21,13 +21,12 @@ if (!class_exists('TW_Component_Loader')) {
 
         private function get_active_components() {
             if (empty($this->active_components)) {
-                // Try specific filter first, then fallback to simple type filter
                 $filter_id = str_replace(':', '_', $this->context_id);
                 $type = explode(':', $this->context_id)[0];
                 $filtered = apply_filters("tw_component_loader_active_components_$filter_id", 
                     apply_filters("tw_component_loader_active_components_$type", []));
-                // Support both simple array format [slug1, slug2] and nested format ['server-side' => [...]]
-                $this->active_components = ['server-side' => $filtered['server-side'] ?? (is_array($filtered) && !empty($filtered) && !isset($filtered['server-side']) ? $filtered : [])];
+                // Support both [slug1, slug2] and ['server-side' => [...]]
+                $this->active_components = ['server-side' => $filtered['server-side'] ?? (is_array($filtered) && !isset($filtered['server-side']) ? $filtered : [])];
             }
             return $this->active_components;
         }

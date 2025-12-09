@@ -10,39 +10,31 @@ if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/inc/class-setup.php';
 require_once __DIR__ . '/inc/class-component-loader.php';
 
-// Helper function to register components (must be defined before initialization)
+// Helper function to register components
 function tw_register_components($components) {
-	$setup = TW_Setup::init();
-	$context_id = $setup->get_context_id();
-	$type = explode(':', $context_id)[0];
-	add_filter("tw_component_loader_active_components_$type", function() use ($components) {
-		return $components;
-	}, 10, 1);
+	$type = explode(':', TW_Setup::init()->get_context_id())[0];
+	add_filter("tw_component_loader_active_components_$type", fn() => $components);
 }
 
-// Initialize (components will be loaded after filters are registered)
+// Initialize
 $tw_setup = TW_Setup::init();
 $context_id = $tw_setup->get_context_id();
 $tw_component_loader = TW_Component_Loader::init($tw_setup->get_components_paths(), $context_id);
 
-// Load components after filters can be registered (on init hook)
-add_action('init', function() use ($tw_component_loader) {
-	$tw_component_loader->load_components();
-}, 1);
+// Load components after filters are registered
+add_action('init', fn() => $tw_component_loader->load_components(), 1);
 
-// Store in context-specific globals (sanitize context ID)
+// Store in context-specific globals
 $global_key = 'tw_' . str_replace(':', '_', $context_id);
 $GLOBALS["{$global_key}_setup"] = $tw_setup;
 $GLOBALS["{$global_key}_component_loader"] = $tw_component_loader;
 
-// Enqueue assets function (memory-optimized: uses cached instances)
+// Enqueue assets function
 function tw_enqueue_assets($hook = '') {
 	$setup = TW_Setup::init();
 	$context_id = $setup->get_context_id();
-	// Sanitize context ID for global variable key
 	$global_key = 'tw_' . str_replace(':', '_', $context_id);
 	$loader = $GLOBALS["{$global_key}_component_loader"] ?? null;
-	
 	if (!$loader) return;
 	
 	$paths = $setup->get_components_paths();
