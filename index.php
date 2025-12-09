@@ -10,16 +10,10 @@ if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/inc/class-setup.php';
 require_once __DIR__ . '/inc/class-component-loader.php';
 
-$tw_setup = TW_Setup::init();
-$tw_component_loader = TW_Component_Loader::init($tw_setup->get_components_paths());
+$tw_components_paths = TW_Setup::init()->get_components_paths();
+$tw_component_loader = TW_Component_Loader::init($tw_components_paths);
 
-global $tw_setup, $tw_component_loader, $tw_base_paths, $tw_components_paths;
-$tw_base_paths = $tw_setup->get_base_paths();
-$tw_components_paths = $tw_setup->get_components_paths();
-
-!defined('TW_THEME_VERSION') && define('TW_THEME_VERSION', '1.0.0');
-!defined('TW_THEME_DIR') && define('TW_THEME_DIR', $tw_base_paths['path']);
-!defined('TW_THEME_URL') && define('TW_THEME_URL', $tw_base_paths['url']);
+global $tw_component_loader, $tw_components_paths;
 
 $tw_component_loader->load_components();
 

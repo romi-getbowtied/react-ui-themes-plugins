@@ -23,22 +23,15 @@ if (!class_exists('TW_Component_Loader')) {
         }
 
         public function load_components() {
+            $base = $this->components_paths['path'] . '/src/ui/app/server-side/';
             foreach ($this->active_components['server-side'] ?? [] as $slug) {
-                $path = $this->components_paths['path'] . "/src/ui/app/server-side/{$slug}/index.php";
-                if (file_exists($path)) include_once $path;
+                $file = $base . $slug . '/index.php';
+                if (file_exists($file)) include_once $file;
             }
         }
 
         public function get_active_server_side_components() {
             return $this->active_components['server-side'] ?? [];
-        }
-
-        public function get_components_path() {
-            return $this->components_paths['path'];
-        }
-
-        public function get_components_url() {
-            return $this->components_paths['url'];
         }
     }
 }
