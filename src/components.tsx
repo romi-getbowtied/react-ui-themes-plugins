@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import "@/lib/portal-patch";
-import { clientComponents, serverComponents } from "@config/islands.config";
+import { clientComponents, serverComponents } from "@config/components.registry";
 import "./styles/theme.css";
 
 declare global {
