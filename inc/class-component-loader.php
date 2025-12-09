@@ -17,9 +17,11 @@ if (!class_exists('TW_Component_Loader')) {
         private function __construct($components_paths, $context_id) {
             $this->components_paths = $components_paths;
             $this->context_id = $context_id;
-            // Use sanitized context ID for filter name
+            // Try specific filter first, then fallback to simple type filter
             $filter_id = str_replace(':', '_', $context_id);
-            $this->active_components = apply_filters("tw_component_loader_active_components_$filter_id", ['server-side' => []]);
+            $type = explode(':', $context_id)[0];
+            $this->active_components = apply_filters("tw_component_loader_active_components_$filter_id", 
+                apply_filters("tw_component_loader_active_components_$type", ['server-side' => []]));
         }
 
         public static function init($components_paths, $context_id) {
