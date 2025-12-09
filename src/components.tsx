@@ -17,23 +17,20 @@ const mountIsland = (el: Element, Component: React.ComponentType) => {
 };
 
 const init = () => {
-	requestAnimationFrame(async () => {
-		// Load client components in parallel
-		const islandElements = await Promise.all(
-			Object.entries(clientComponents).flatMap(async ([key, loader]) => {
-				const Component = (await loader()).default;
-				return Array.from(document.querySelectorAll(`[data-island="${key}"]`), el => ({ el, Component }));
-			})
-		).then(results => results.flat());
-
-		// Load and execute server-side enhancements in parallel
-		const activeSlugs = window.twActiveComponents?.serverSide || [];
-		const serverLoaders = activeSlugs
-			.map(slug => serverComponents[slug as keyof typeof serverComponents])
-			.filter(Boolean);
+	requestAnimationFrame(() => {
+		// Mount client-side React islands
+		const islandElements = Object.entries(clientComponents).flatMap(([key, Component]) =>
+			Array.from(document.querySelectorAll(`[data-island="${key}"]`), el => ({ el, Component }))
+		);
 		
-		await Promise.all(serverLoaders.map(loader => loader().then(enhance => enhance())));
 		islandElements.forEach(({ el, Component }) => mountIsland(el, Component));
+
+		// Execute server-side enhancements for active components
+		const activeSlugs = window.twActiveComponents?.serverSide || [];
+		activeSlugs.forEach(slug => {
+			const enhance = serverComponents[slug as keyof typeof serverComponents];
+			if (enhance) enhance();
+		});
 	});
 };
 
