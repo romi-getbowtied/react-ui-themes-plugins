@@ -14,7 +14,6 @@ if (!class_exists('TW_Components')) {
 
         private function __construct() {
             $is_theme = strpos(__DIR__, 'themes') !== false;
-            $context_type = $is_theme ? 'theme' : 'plugin';
             
             if ($is_theme) {
                 $this->base_path = get_template_directory();
@@ -26,7 +25,7 @@ if (!class_exists('TW_Components')) {
                 $this->base_url = $plugin_file ? plugin_dir_url($plugin_file) : plugins_url(basename($plugin_root));
             }
             
-            $this->handle_prefix = "tw-$context_type";
+            $this->handle_prefix = "tw-" . ($is_theme ? 'theme' : 'plugin');
             
             add_action('init', [$this, 'load_server_components']);
             add_action($is_theme ? 'wp_enqueue_scripts' : 'admin_enqueue_scripts', [$this, 'enqueue_assets']);
