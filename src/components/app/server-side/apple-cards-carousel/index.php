@@ -1,6 +1,5 @@
 <?php
-if (!defined('ABSPATH'))
-	exit;
+if (!defined('ABSPATH')) exit;
 
 if (!class_exists('TW_Apple_Cards_Carousel')) {
 	class TW_Apple_Cards_Carousel

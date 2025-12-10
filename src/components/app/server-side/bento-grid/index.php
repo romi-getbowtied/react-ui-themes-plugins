@@ -1,6 +1,5 @@
 <?php
-if (!defined('ABSPATH'))
-	exit;
+if (!defined('ABSPATH')) exit;
 
 if (!class_exists('TW_Bento_Grid')) {
 	class TW_Bento_Grid
