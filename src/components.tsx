@@ -1,42 +1,26 @@
-import * as React from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import "@/lib/portal-patch";
 import { clientComponents, serverComponents } from "@config/components.registry";
 import "./styles/theme.css";
 
-const getReactRoot = (element: Element) => (element as any).__reactRoot;
+const roots = new WeakMap<Element, Root>();
 
-const mountReactIsland = (element: Element, Component: React.ComponentType) => {
-	if (getReactRoot(element)) return;
-	const root = createRoot(element);
-	(element as any).__reactRoot = root;
-	root.render(<Component />);
-};
-
-const mountClientIslands = () => {
-	const clientIslandElements = Object.entries(clientComponents).flatMap(([islandSlug, Component]) =>
-		Array.from(document.querySelectorAll(`[data-island="${islandSlug}"]`), element => ({ element, Component }))
-	);
-	clientIslandElements.forEach(({ element, Component }) => mountReactIsland(element, Component));
-};
-
-const enhanceServerComponents = () => {
-	Object.values(serverComponents).forEach(enhanceServerComponent => enhanceServerComponent());
-};
-
-const initializeComponents = () => {
-	requestAnimationFrame(() => {
-		mountClientIslands();
-		enhanceServerComponents();
-	});
-};
-
-const ready = (fn: () => void) => {
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", fn, { once: true });
-	} else {
-		fn();
+const init = () => {
+	// Mount client-side React islands
+	for (const [slug, Component] of Object.entries(clientComponents)) {
+		for (const element of document.querySelectorAll(`[data-island="${slug}"]`)) {
+			if (!roots.has(element)) {
+				const root = createRoot(element);
+				roots.set(element, root);
+				root.render(<Component />);
+			}
+		}
 	}
+
+	// Enhance server-side components
+	for (const enhance of Object.values(serverComponents)) enhance();
 };
 
-ready(initializeComponents);
+document.readyState === "loading" 
+	? document.addEventListener("DOMContentLoaded", init, { once: true })
+	: init();
