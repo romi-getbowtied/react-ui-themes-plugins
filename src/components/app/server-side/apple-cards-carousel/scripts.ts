@@ -2,7 +2,7 @@
  * Apple Cards Carousel Enhancement - Optimized for maximum FPS
  */
 
-export function enhanceAppleCardsCarousel() {
+export function appleCardsCarousel() {
 	requestAnimationFrame(() => {
 		document.querySelectorAll('.apple-cards-carousel').forEach((carousel) => {
 			const container = carousel.querySelector('.overflow-x-scroll') as HTMLElement;

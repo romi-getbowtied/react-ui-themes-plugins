@@ -1,7 +1,7 @@
 /**
  * Bento Grid Enhanced - Optimized for maximum FPS
  */
-export function enhanceBentoGrid() {
+export function bentoGrid() {
 	// Defer DOM query to avoid forced reflow on init
 	requestAnimationFrame(() => {
 		const bentoGrids = document.querySelectorAll('.bento-grid-section');

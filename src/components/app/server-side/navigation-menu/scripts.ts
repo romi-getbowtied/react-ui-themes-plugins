@@ -2,7 +2,7 @@
  * Navigation Menu Enhancement - Optimized for maximum FPS
  */
 
-export function enhanceNavigationMenu() {
+export function navigationMenu() {
 	// Defer DOM query to avoid forced reflow on init
 	requestAnimationFrame(() => {
 	const nav = document.querySelector('nav[role="navigation"]');

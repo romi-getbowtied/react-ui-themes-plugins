@@ -2,7 +2,7 @@
  * Hero Parallax Enhancement - Optimized for maximum FPS with GPU acceleration
  */
 
-export function enhanceHeroParallax() {
+export function heroParallax() {
 	// Defer all DOM queries to avoid forced reflow on init
 	requestAnimationFrame(() => {
 		const section = document.querySelector('.hero-parallax-section') as HTMLElement;
