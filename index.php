@@ -10,12 +10,13 @@ if (!class_exists('TW_Components')) {
         private $base_path;
         private $base_url;
         private $handle_prefix;
+        private $is_theme;
 
         private function __construct()
         {
-            $is_theme = strpos(__DIR__, 'themes') !== false;
+            $this->is_theme = strpos(__DIR__, 'themes') !== false;
 
-            if ($is_theme) {
+            if ($this->is_theme) {
                 $this->base_path = get_template_directory();
                 $this->base_url = get_template_directory_uri();
             } else {
@@ -25,10 +26,15 @@ if (!class_exists('TW_Components')) {
                 $this->base_url = $plugin_file ? plugin_dir_url($plugin_file) : plugins_url(basename($plugin_root));
             }
 
-            $this->handle_prefix = 'tw-' . ($is_theme ? 'theme' : 'plugin');
+            $this->handle_prefix = 'tw-' . ($this->is_theme ? 'theme' : 'plugin');
 
             add_action('init', [$this, 'load_server_components']);
-            add_action($is_theme ? 'wp_enqueue_scripts' : 'admin_enqueue_scripts', [$this, 'enqueue_assets']);
+            
+            // Enqueue frontend assets on public pages
+            add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
+            
+            // Enqueue backend assets in admin area
+            add_action('admin_enqueue_scripts', [$this, 'enqueue_backend_assets']);
         }
 
         public function load_server_components()
@@ -42,10 +48,31 @@ if (!class_exists('TW_Components')) {
             }
         }
 
-        public function enqueue_assets()
+        /**
+         * Enqueue frontend assets (public-facing pages)
+         */
+        public function enqueue_frontend_assets()
         {
-            $assets_path = "$this->base_path/ui/assets";
-            $assets_url = "$this->base_url/ui/assets";
+            $this->enqueue_assets('frontend');
+        }
+
+        /**
+         * Enqueue backend assets (admin area)
+         */
+        public function enqueue_backend_assets()
+        {
+            $this->enqueue_assets('backend');
+        }
+
+        /**
+         * Shared asset enqueueing logic (DRY)
+         * 
+         * @param string $context 'frontend' or 'backend'
+         */
+        private function enqueue_assets($context)
+        {
+            $assets_path = "$this->base_path/ui/assets/$context";
+            $assets_url = "$this->base_url/ui/assets/$context";
 
             $styles_path = "$assets_path/styles.css";
             $styles_url = "$assets_url/styles.css";
@@ -55,8 +82,20 @@ if (!class_exists('TW_Components')) {
 
             $get_version = fn($file) => file_exists($file) ? filemtime($file) : '1.0.0';
 
-            wp_enqueue_style("$this->handle_prefix-style", $styles_url, [], $get_version($styles_path));
-            wp_enqueue_script("$this->handle_prefix-script", $scripts_url, ['wp-element'], $get_version($scripts_path), true);
+            wp_enqueue_style(
+                "$this->handle_prefix-$context-style",
+                $styles_url,
+                [],
+                $get_version($styles_path)
+            );
+
+            wp_enqueue_script(
+                "$this->handle_prefix-$context-script",
+                $scripts_url,
+                ['wp-element'],
+                $get_version($scripts_path),
+                true
+            );
         }
 
         public static function init()
