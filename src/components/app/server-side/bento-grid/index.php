@@ -1,8 +1,8 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-if (!class_exists('TW_Bento_Grid')) {
-	class TW_Bento_Grid
+if (!class_exists('GBT_Bento_Grid')) {
+	class GBT_Bento_Grid
 	{
 		public static function get_items()
 		{
@@ -156,7 +156,7 @@ if (!class_exists('TW_Bento_Grid')) {
 				],
 			];
 
-			return apply_filters('tw_bento_grid_items', $default_items);
+			return apply_filters('gbt_bento_grid_items', $default_items);
 		}
 
 		public static function get_icon($icon_name)

@@ -1,8 +1,8 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-if (!class_exists('TW_Hero_Parallax')) {
-	class TW_Hero_Parallax {
+if (!class_exists('GBT_Hero_Parallax')) {
+	class GBT_Hero_Parallax {
 		public static function get_products() {
 	$default_products = [
 		[
@@ -82,11 +82,11 @@ if (!class_exists('TW_Hero_Parallax')) {
 		],
 	];
 	
-	return apply_filters('tw_hero_products', $default_products);
+	return apply_filters('gbt_hero_products', $default_products);
 }
 
 		public static function render($items_per_row = null) {
-			$items_per_row = $items_per_row ?? apply_filters('tw_hero_items_per_row', 5);
+			$items_per_row = $items_per_row ?? apply_filters('gbt_hero_items_per_row', 5);
 			$products = self::get_products();
 	$rows = [];
 			for ($i = 0; $i < count($products); $i += $items_per_row) {

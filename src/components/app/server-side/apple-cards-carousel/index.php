@@ -1,14 +1,14 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-if (!class_exists('TW_Apple_Cards_Carousel')) {
-	class TW_Apple_Cards_Carousel
+if (!class_exists('GBT_Apple_Cards_Carousel')) {
+	class GBT_Apple_Cards_Carousel
 	{
 		public static function get_items($items = null)
 		{
 			if ($items !== null)
 				return $items;
-			$filtered = apply_filters('tw_apple_cards_carousel_items', null);
+			$filtered = apply_filters('gbt_apple_cards_carousel_items', null);
 			if ($filtered !== null)
 				return $filtered;
 

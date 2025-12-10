@@ -1,8 +1,8 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-if (!class_exists('TW_Nav_Menu')) {
-	class TW_Nav_Menu {
+if (!class_exists('GBT_Nav_Menu')) {
+	class GBT_Nav_Menu {
 		public static function render($location = 'primary', $args = []) {
 	$defaults = [
 		'theme_location' => $location,
@@ -11,7 +11,7 @@ if (!class_exists('TW_Nav_Menu')) {
 		'menu_id' => 'primary-menu',
 		'fallback_cb' => false,
 		'items_wrap' => '<ul id="%1$s" class="%2$s" itemscope itemtype="https://schema.org/SiteNavigationElement">%3$s</ul>',
-		'walker' => new TW_Nav_Walker(),
+		'walker' => new GBT_Nav_Walker(),
 	];
 	
 	$args = wp_parse_args($args, $defaults);
@@ -29,8 +29,8 @@ if (!class_exists('TW_Nav_Menu')) {
 }
 }
 
-if (!class_exists('TW_Nav_Walker')) {
-class TW_Nav_Walker extends Walker_Nav_Menu {
+if (!class_exists('GBT_Nav_Walker')) {
+class GBT_Nav_Walker extends Walker_Nav_Menu {
 	public function start_el(&$output, $item, $depth = 0, $args = null, $id = 0) {
 		$indent = ($depth) ? str_repeat("\t", $depth) : '';
 		
