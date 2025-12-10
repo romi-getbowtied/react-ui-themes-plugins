@@ -1,8 +1,8 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-if (!class_exists('GBT_Bento_Grid')) {
-	class GBT_Bento_Grid
+if (!class_exists('GBT_Component_Bento_Grid')) {
+	class GBT_Component_Bento_Grid
 	{
 		public static function get_items()
 		{

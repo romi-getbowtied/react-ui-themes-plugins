@@ -1,8 +1,8 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-if (!class_exists('GBT_Apple_Cards_Carousel')) {
-	class GBT_Apple_Cards_Carousel
+if (!class_exists('GBT_Component_Apple_Cards_Carousel')) {
+	class GBT_Component_Apple_Cards_Carousel
 	{
 		public static function get_items($items = null)
 		{

@@ -1,8 +1,8 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-if (!class_exists('GBT_Hero_Parallax')) {
-	class GBT_Hero_Parallax {
+if (!class_exists('GBT_Component_Hero_Parallax')) {
+	class GBT_Component_Hero_Parallax {
 		public static function get_products() {
 	$default_products = [
 		[
