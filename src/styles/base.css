@@ -1,5 +1,5 @@
 @layer base {
-	#tw-theme-app .ugc-section {
+	#gbt-ui-app .ugc-section {
 		/* Base typography from Tailwind Typography plugin */
 		@apply text-base leading-normal;
 		
