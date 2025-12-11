@@ -18,6 +18,9 @@ const MENU_ITEMS = [
 	{ id: 4, label: 'Favorite', icon: Star },
 	{ id: 5, label: 'Pin', icon: Pin },
 	{ id: 6, label: 'Delete', icon: Trash2 },
+	{ id: 1, label: 'Copy', icon: Copy },
+	{ id: 2, label: 'Cut', icon: Scissors },
+	{ id: 3, label: 'Paste', icon: ClipboardPaste },
 ];
 
 export const RadialMenuDemo = () => (
