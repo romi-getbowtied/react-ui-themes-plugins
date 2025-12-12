@@ -29,35 +29,11 @@ if (!class_exists('GBT_Component_Expandable_Card_Demo')) {
 		
 		$imageWidth = intval($props['thumbnailWidth']);
 		$imageHeight = intval($props['thumbnailHeight']);
-			if (empty($cards)) {
-				$cards = [
-					[
-						'title' => 'Summertime Sadness',
-						'description' => 'Lana Del Rey',
-						'src' => 'https://assets.aceternity.com/demos/lana-del-rey.jpeg',
-						'ctaText' => 'Play',
-						'ctaLink' => 'https://ui.aceternity.com/templates',
-						'content' => 'Lana Del Rey, an iconic American singer-songwriter, is celebrated for her melancholic and cinematic music style. Born Elizabeth Woolridge Grant in New York City, she has captivated audiences worldwide with her haunting voice and introspective lyrics.',
-					],
-					[
-						'title' => 'Mitran Di Chhatri',
-						'description' => 'Babbu Maan',
-						'src' => 'https://assets.aceternity.com/demos/babbu-maan.jpeg',
-						'ctaText' => 'Play',
-						'ctaLink' => 'https://ui.aceternity.com/templates',
-						'content' => 'Babu Maan, a legendary Punjabi singer, is renowned for his soulful voice and profound lyrics that resonate deeply with his audience. Born in the village of Khant Maanpur in Punjab, India, he has become a cultural icon in the Punjabi music industry.',
-					],
-					[
-						'title' => 'For Whom The Bell Tolls',
-						'description' => 'Metallica',
-						'src' => 'https://assets.aceternity.com/demos/metallica.jpeg',
-						'ctaText' => 'Play',
-						'ctaLink' => 'https://ui.aceternity.com/templates',
-						'content' => 'Metallica, an iconic American heavy metal band, is renowned for their powerful sound and intense performances that resonate deeply with their audience. Formed in Los Angeles, California, they have become a cultural icon in the heavy metal music industry.',
-					],
-				];
-			}
-			?>
+		
+		if (empty($cards)) {
+			return;
+		}
+		?>
 			<div 
 				data-expandable-card-container="<?php echo esc_attr('expandable-card-' . uniqid()); ?>"
 				data-props="<?php echo UI_Tools::data_props($props); ?>"
