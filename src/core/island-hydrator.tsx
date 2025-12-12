@@ -21,7 +21,22 @@ export const hydrateIslands = (
 							console.warn(`Failed to parse data-props for ${slug}:`, e);
 						}
 					}
-					roots.set(el, createRoot(el)).get(el)!.render(<C {...props} />);
+					
+					const htmlEl = el as HTMLElement;
+					const root = createRoot(el);
+					roots.set(el, root);
+					root.render(<C {...props} />);
+					
+					// Remove height after React renders
+					if (htmlEl.style.height) {
+						setTimeout(() => {
+							requestAnimationFrame(() => {
+								requestAnimationFrame(() => {
+									htmlEl.style.height = '';
+								});
+							});
+						}, 500);
+					}
 				}
 			})
 		);
