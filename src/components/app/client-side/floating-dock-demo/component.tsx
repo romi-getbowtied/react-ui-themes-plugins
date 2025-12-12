@@ -45,10 +45,8 @@ type LinkItem = {
 type FloatingDockDemoProps = {
 	/** Array of dock items to display */
 	items?: LinkItem[];
-	/** Optional CSS class for mobile view */
-	mobileClassName?: string;
-	/** Optional CSS class for desktop view */
-	desktopClassName?: string;
+	/** Optional CSS class for the dock */
+	className?: string;
 };
 
 /**
@@ -72,15 +70,13 @@ type FloatingDockDemoProps = {
  * 
  * @param {FloatingDockDemoProps} props - Component props
  * @param {LinkItem[]} [props.items=[]] - Array of dock items
- * @param {string} [props.mobileClassName] - CSS class for mobile view
- * @param {string} [props.desktopClassName] - CSS class for desktop view
+ * @param {string} [props.className] - CSS class for the dock
  * 
  * @returns {JSX.Element} Floating dock component
  */
 export function FloatingDockDemo({ 
 	items = [], 
-	mobileClassName,
-	desktopClassName 
+	className 
 }: FloatingDockDemoProps) {
 	// Transform items: convert icon strings to React components
 	const linksWithIcons = items.map(item => {
@@ -111,8 +107,7 @@ export function FloatingDockDemo({
 	return (
 		<div className="flex items-center justify-center w-full">
 			<FloatingDock
-				mobileClassName={mobileClassName}
-				desktopClassName={desktopClassName}
+				className={className}
 				items={linksWithIcons}
 			/>
 		</div>

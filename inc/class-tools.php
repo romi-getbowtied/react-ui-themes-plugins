@@ -36,8 +36,7 @@ class UI_Tools {
 	 * <div 
 	 *     data-island="floating-dock" 
 	 *     data-props="<?php echo UI_Tools::data_props([
-	 *         'items' => $dock_items,
-	 *         'mobileClassName' => 'translate-y-20'
+	 *         'items' => $dock_items
 	 *     ]); ?>"
 	 * ></div>
 	 */
