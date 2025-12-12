@@ -2,6 +2,7 @@ import React, { useEffect, useId, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AnimatePresence, motion } from "motion/react";
 import { useOutsideClick } from "@/hooks/use-outside-click";
+import { lockHeightDuringHydration } from "@/lib/hydration-utils";
 
 /**
  * Card data structure
@@ -15,60 +16,49 @@ type CardData = {
 	content: string;
 };
 
-/**
- * Close icon component
- */
-const CloseIcon = () => {
-	return (
-		<motion.svg
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			exit={{ opacity: 0, transition: { duration: 0.05 } }}
-			xmlns="http://www.w3.org/2000/svg"
-			width="24"
-			height="24"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			className="h-4 w-4 text-black"
-		>
-			<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-			<path d="M18 6l-12 12" />
-			<path d="M6 6l12 12" />
-		</motion.svg>
-	);
-};
+const CloseIcon = () => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		width="24"
+		height="24"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="2"
+		strokeLinecap="round"
+		strokeLinejoin="round"
+		className="h-4 w-4 text-black"
+	>
+		<path d="M18 6l-12 12" />
+		<path d="M6 6l12 12" />
+	</svg>
+);
 
-/**
- * React component that handles the expandable card interactions
- * This matches the client component exactly for animations
- */
-function ExpandableCardComponent({ cards, containerId }: { cards: CardData[]; containerId: string }) {
-	const [active, setActive] = useState<CardData | null>(null);
+function ExpandableCardComponent({ cards, thumbnailWidth = 56, thumbnailHeight = 56 }: { cards: CardData[]; thumbnailWidth?: number; thumbnailHeight?: number }) {
+	const [activeIndex, setActiveIndex] = useState<number | null>(null);
 	const ref = useRef<HTMLDivElement>(null);
 	const id = useId();
+	
+	// Handle proportionality: if only thumbnailWidth or thumbnailHeight is provided, use it for both (square)
+	const imageWidth = thumbnailWidth || thumbnailHeight || 56;
+	const imageHeight = thumbnailHeight || thumbnailWidth || 56;
+
+	const active = activeIndex !== null ? cards[activeIndex] : null;
+	const close = () => setActiveIndex(null);
 
 	useEffect(() => {
-		function onKeyDown(event: KeyboardEvent) {
-			if (event.key === "Escape") {
-				setActive(null);
-			}
-		}
+		if (!active) return;
 
-		if (active) {
-			document.body.style.overflow = "hidden";
-		} else {
+		const handleEscape = (e: KeyboardEvent) => e.key === "Escape" && close();
+		document.body.style.overflow = "hidden";
+		window.addEventListener("keydown", handleEscape);
+		return () => {
 			document.body.style.overflow = "auto";
-		}
-
-		window.addEventListener("keydown", onKeyDown);
-		return () => window.removeEventListener("keydown", onKeyDown);
+			window.removeEventListener("keydown", handleEscape);
+		};
 	}, [active]);
 
-	useOutsideClick(ref, () => setActive(null));
+	useOutsideClick(ref, close);
 
 	return (
 		<>
@@ -86,37 +76,27 @@ function ExpandableCardComponent({ cards, containerId }: { cards: CardData[]; co
 				{active ? (
 					<div className="fixed inset-0 grid place-items-center z-50">
 						<motion.button
-							key={`button-${active.title}-${id}`}
+							key={`close-${activeIndex}-${id}`}
 							layout
-							initial={{
-								opacity: 0,
-							}}
-							animate={{
-								opacity: 1,
-							}}
-							exit={{
-								opacity: 0,
-								transition: {
-									duration: 0.05,
-								},
-							}}
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0, transition: { duration: 0.05 } }}
 							className="flex absolute top-2 right-2 lg:hidden items-center justify-center bg-white rounded-full h-6 w-6"
-							onClick={() => setActive(null)}
+							onClick={close}
 						>
 							<CloseIcon />
 						</motion.button>
 						<motion.div
-							layoutId={`card-${active.title}-${id}`}
+							layoutId={`card-${activeIndex}-${id}`}
 							ref={ref}
 							className="w-full max-w-[500px]  h-full md:h-fit md:max-h-[90%]  flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden"
 						>
-							<motion.div layoutId={`image-${active.title}-${id}`}>
-								<img
-									width={200}
-									height={200}
-									src={active.src}
-									alt={active.title}
-									className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-top"
+							<motion.div layoutId={`image-${activeIndex}-${id}`}>
+								<div
+									role="img"
+									aria-label={active.title}
+									style={{ backgroundImage: `url('${active.src}')` }}
+									className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg bg-cover bg-top"
 								/>
 							</motion.div>
 
@@ -124,21 +104,21 @@ function ExpandableCardComponent({ cards, containerId }: { cards: CardData[]; co
 								<div className="flex justify-between items-start p-4">
 									<div className="">
 										<motion.h3
-											layoutId={`title-${active.title}-${id}`}
-											className="font-bold text-neutral-700 dark:text-neutral-200"
+											layoutId={`title-${activeIndex}-${id}`}
+											className="font-bold mt-2 mb-2 text-neutral-700 dark:text-neutral-200"
 										>
 											{active.title}
 										</motion.h3>
 										<motion.p
-											layoutId={`description-${active.description}-${id}`}
-											className="text-neutral-600 dark:text-neutral-400"
+											layoutId={`description-${activeIndex}-${id}`}
+											className="mt-0 mb-2 text-neutral-600 dark:text-neutral-400"
 										>
 											{active.description}
 										</motion.p>
 									</div>
 
 									<motion.a
-										layoutId={`button-${active.title}-${id}`}
+										layoutId={`button-${activeIndex}-${id}`}
 										href={active.ctaLink}
 										target="_blank"
 										className="px-4 py-3 text-sm rounded-full font-bold bg-green-500 text-white"
@@ -152,9 +132,9 @@ function ExpandableCardComponent({ cards, containerId }: { cards: CardData[]; co
 										initial={{ opacity: 0 }}
 										animate={{ opacity: 1 }}
 										exit={{ opacity: 0 }}
-										className="text-neutral-600 text-xs md:text-sm lg:text-base h-40 md:h-fit pb-10 flex flex-col items-start gap-4 overflow-auto dark:text-neutral-400 [mask:linear-gradient(to_bottom,white,white,transparent)] [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch]"
+										className="text-neutral-600 text-xs md:text-sm lg:text-base h-40 md:h-fit pb-10 flex flex-col items-start gap-4 overflow-auto dark:text-neutral-400 [mask:linear-gradient(to_bottom,white,white,transparent)] [scrollbar-width:none] [-ms-overflow-style:none]"
 									>
-										<p>{active.content || 'Content not available'}</p>
+										<p>{active.content}</p>
 									</motion.div>
 								</div>
 							</div>
@@ -165,39 +145,43 @@ function ExpandableCardComponent({ cards, containerId }: { cards: CardData[]; co
 			<ul className="max-w-2xl mx-auto w-full gap-4">
 				{cards.map((card, index) => (
 					<motion.div
-						layoutId={`card-${card.title}-${id}`}
-						key={`card-${card.title}-${id}`}
-						onClick={() => setActive(card)}
-						className="p-4 flex flex-col md:flex-row justify-between items-center hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl cursor-pointer"
+						key={`card-${index}`}
+						layoutId={`card-${index}-${id}`}
+						onClick={() => setActiveIndex(index)}
+						className="p-4 flex flex-row justify-between items-center hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl cursor-pointer"
 					>
-						<div className="flex gap-4 flex-col md:flex-row ">
-							<motion.div layoutId={`image-${card.title}-${id}`}>
-								<img
-									width={100}
-									height={100}
-									src={card.src}
-									alt={card.title}
-									className="h-40 w-40 md:h-14 md:w-14 rounded-lg object-cover object-top"
+						<div className="flex gap-4 flex-row items-center">
+							<motion.div layoutId={`image-${index}-${id}`} className="flex items-center shrink-0">
+								<div
+									role="img"
+									aria-label={card.title}
+									style={{
+										width: `${imageWidth}px`,
+										height: `${imageHeight}px`,
+										aspectRatio: `${imageWidth} / ${imageHeight}`,
+										backgroundImage: `url('${card.src}')`
+									}}
+									className="rounded-lg bg-cover bg-top shrink-0"
 								/>
 							</motion.div>
-							<div className="">
+							<div className="flex flex-col justify-center shrink">
 								<motion.h3
-									layoutId={`title-${card.title}-${id}`}
-									className="font-medium text-neutral-800 dark:text-neutral-200 text-center md:text-left"
+									layoutId={`title-${index}-${id}`}
+									className="font-bold mt-2 mb-2 text-neutral-800 dark:text-neutral-200 text-left"
 								>
 									{card.title}
 								</motion.h3>
 								<motion.p
-									layoutId={`description-${card.description}-${id}`}
-									className="text-neutral-600 dark:text-neutral-400 text-center md:text-left"
+									layoutId={`description-${index}-${id}`}
+									className="mt-0 mb-2 text-neutral-600 dark:text-neutral-400 text-left"
 								>
 									{card.description}
 								</motion.p>
 							</div>
 						</div>
 						<motion.button
-							layoutId={`button-${card.title}-${id}`}
-							className="px-4 py-2 text-sm rounded-full font-bold bg-gray-100 hover:bg-green-500 hover:text-white text-black mt-4 md:mt-0"
+							layoutId={`button-${index}-${id}`}
+							className="px-4 py-2 text-sm rounded-full font-bold bg-gray-100 hover:bg-green-500 hover:text-white text-black mt-0"
 						>
 							{card.ctaText}
 						</motion.button>
@@ -208,47 +192,53 @@ function ExpandableCardComponent({ cards, containerId }: { cards: CardData[]; co
 	);
 }
 
-/**
- * Expandable Card Demo Enhancement
- * Enhances server-rendered HTML with React animations
- * Replaces server-rendered cards with React motion components for exact animation matching
- */
+const extractCardData = (el: Element): CardData => ({
+	title: el.getAttribute('data-card-title') || '',
+	description: el.getAttribute('data-card-description') || '',
+	src: el.getAttribute('data-card-src') || '',
+	ctaText: el.getAttribute('data-card-cta-text') || '',
+	ctaLink: el.getAttribute('data-card-cta-link') || '#',
+	content: el.getAttribute('data-card-content') || '',
+});
+
 export function expandableCardDemo() {
-	const containers = document.querySelectorAll('[data-expandable-card-container]');
-	
-	containers.forEach((container) => {
-		const containerId = container.getAttribute('data-expandable-card-container');
-		if (!containerId) return;
+	document.querySelectorAll('[data-expandable-card-container]').forEach((container) => {
+		const cards: CardData[] = Array.from(
+			container.querySelectorAll('[data-card-index]'),
+			extractCardData
+		);
 
-		// Extract card data from server-rendered HTML
-		const cardElements = container.querySelectorAll('[data-card-index]');
-		const cards: CardData[] = Array.from(cardElements).map((el) => {
-			return {
-				title: el.getAttribute('data-card-title') || '',
-				description: el.getAttribute('data-card-description') || '',
-				src: el.getAttribute('data-card-src') || '',
-				ctaText: el.getAttribute('data-card-cta-text') || '',
-				ctaLink: el.getAttribute('data-card-cta-link') || '#',
-				content: el.getAttribute('data-card-content') || '',
-			};
-		});
+		if (!cards.length) return;
 
-		if (cards.length === 0) return;
-
-		// Remove server-rendered content and replace with React
-		const ul = container.querySelector('ul');
-		if (ul) {
-			ul.remove();
+		// Parse props from data-props attribute (same pattern as client components)
+		let props: { thumbnailWidth?: number; thumbnailHeight?: number } = {};
+		const propsData = container.getAttribute('data-props');
+		if (propsData) {
+			try {
+				props = JSON.parse(propsData);
+			} catch (e) {
+				console.warn('Failed to parse data-props for expandable-card-demo:', e);
+			}
 		}
 
-		// Create a wrapper div for React
-		const reactWrapper = document.createElement('div');
-		reactWrapper.id = `expandable-card-react-${containerId}`;
-		container.appendChild(reactWrapper);
+		// Handle proportionality: if only thumbnailWidth or thumbnailHeight is provided, use it for both (square)
+		const thumbnailWidth = props.thumbnailWidth || props.thumbnailHeight || 56;
+		const thumbnailHeight = props.thumbnailHeight || props.thumbnailWidth || 56;
 
-		// Render React component with exact same structure as client component
-		const root = createRoot(reactWrapper);
-		root.render(<ExpandableCardComponent cards={cards} containerId={containerId} />);
+		// Prevent layout jumps during hydration using reusable utility
+		lockHeightDuringHydration(container, () => {
+			// Remove server-rendered content
+			container.querySelector('ul')?.remove();
+			
+			// Render React component
+			createRoot(container).render(
+				<ExpandableCardComponent 
+					cards={cards} 
+					thumbnailWidth={thumbnailWidth} 
+					thumbnailHeight={thumbnailHeight} 
+				/>
+			);
+		});
 	});
 }
 
