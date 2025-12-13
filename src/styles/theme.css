@@ -1,14 +1,9 @@
-@config "../../../tailwind.config.js";
-@variant dark (&:where(.dark, .dark *));
+@import "tailwindcss/theme.css";
 
-/* Scope preflight/base styles inside #gbt-ui-app */
 #gbt-ui-app {
 	@import "tailwindcss/preflight.css" layer(base);
+	@import "tailwindcss/utilities.css";
 }
-
-/* Theme and utilities are scoped via important: "#gbt-ui-app" in config */
-@import "tailwindcss/theme.css";
-@import "tailwindcss/utilities.css";
 
 @theme {
 	--color-background: hsl(var(--background));
@@ -75,14 +70,13 @@
 	--popover-foreground: 210 40% 98%;
 }
 
-@layer base {
-	#gbt-ui-app {
-		background-color: hsl(var(--background));
-		color: hsl(var(--foreground));
-		font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-		
-		& * {
-		border-color: hsl(var(--border));
-		}
+
+#gbt-ui-app {
+	background-color: hsl(var(--background));
+	color: hsl(var(--foreground));
+	font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+	
+	& * {
+	border-color: hsl(var(--border));
 	}
 }
