@@ -1,0 +1,6 @@
+@layer theme, base, components, utilities;
+
+/* Import theme variables and base styles first */
+@import "./theme.css";
+@import "./base.css";
+
